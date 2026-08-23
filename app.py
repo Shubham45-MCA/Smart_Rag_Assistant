@@ -1,3 +1,4 @@
+import os
 import requests
 import streamlit as st
 
@@ -46,6 +47,11 @@ question = st.text_input(
     placeholder="e.g., What are the key qualifications mentioned?",
 )
 
+# Define Backend URL (Supports cloud live URL and local fallback)
+BACKEND_URL = os.environ.get(
+    "BACKEND_URL", "https://smart-rag-assistant.onrender.com/ask"
+)
+
 # Execution Button
 if st.button("Generate Answer", type="primary"):
   if question:
@@ -63,9 +69,7 @@ if st.button("Generate Answer", type="primary"):
       payload = {"question": question}
 
       try:
-        response = requests.post(
-            "http://127.0.0.1:8000/ask", files=files, data=payload
-        )
+        response = requests.post(BACKEND_URL, files=files, data=payload)
         if response.status_code == 200:
           st.success("Response:")
           st.markdown(response.json()["answer"])
@@ -76,8 +80,8 @@ if st.button("Generate Answer", type="primary"):
           )
       except requests.exceptions.ConnectionError:
         st.error(
-            "Unable to connect to the backend server. Please ensure FastAPI is"
-            " running (`uvicorn backend:app`)."
+            "Unable to connect to the backend server. Please check your"
+            " connection."
         )
       except Exception as e:
         st.error(f"An unexpected error occurred: {str(e)}")
